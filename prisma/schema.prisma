@@ -13,3 +13,124 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  email       String   @unique
+  passwordHash String
+  role        Role
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Wishlist    Wishlist?
+  Cart        Cart?
+  Orders      Order[]
+}
+
+model Product {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String?
+  price        Float
+  stockQuantity Int
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  WishlistItems WishlistItem[]
+  CartItems    CartItem[]
+  OrderItems   OrderItem[]
+  Categories   ProductCategory[]
+}
+
+model Category {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  Products    ProductCategory[]
+}
+
+model ProductCategory {
+  productId  Int
+  categoryId Int
+  Product    Product  @relation(fields: [productId], references: [id])
+  Category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([productId, categoryId])
+}
+
+model Wishlist {
+  id        Int          @id @default(autoincrement())
+  userId    Int          @unique
+  user      User         @relation(fields: [userId], references: [id])
+  items     WishlistItem[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model WishlistItem {
+  wishlistId Int
+  productId  Int
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@id([wishlistId, productId])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  cartId    Int
+  productId Int
+  quantity  Int
+  cart      Cart      @relation(fields: [cartId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@id([cartId, productId])
+}
+
+model Order {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  totalAmount Float
+  status      OrderStatus
+  user        User         @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model OrderItem {
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([orderId, productId])
+}
+
+enum Role {
+  admin
+  customer
+}
+
+enum OrderStatus {
+  pending
+  paid
+  shipped
+  completed
+  cancelled
+}

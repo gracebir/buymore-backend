@@ -13,7 +13,7 @@ export class AuthDto {
 
     @IsNotEmpty()
     @IsString()
-    passwordHash: string
+    password: string
 
     @IsNotEmpty()
     @IsEnum(Role)
